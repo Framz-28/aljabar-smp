@@ -257,7 +257,7 @@
   </div>
 
   <div class="status-bar">
-    <span>ALJABAR APP</span>
+    <span>EDRIC STUDIO</span>
     <div class="notch"></div>
     <span class="audio-toggle" onclick="toggleAudio(event)">🔊 Sound: <b id="audioStatus">ON</b></span>
   </div>
@@ -995,7 +995,11 @@
   }
 
   function confirmExitApp() {
-    showAppModal('🚪', 'Konfirmasi Keluar', 'Apakah Anda yakin ingin keluar ke tampilan awal?', true, () => goToScreen(1));
+    // Memunculkan pop-up konfirmasi khusus aplikasi ALJABAR
+    showAppModal('🚪', 'Keluar Aplikasi', 'Apakah Anda yakin ingin keluar dari aplikasi ALJABAR?', true, () => {
+      // Perintah untuk keluar / kembali ke layar utama (scene 1)
+      goToScreen(1);
+    });
   }
 
   function allowDrop(ev) { ev.preventDefault(); }
