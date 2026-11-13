@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ALJABAR - Interactive Gamified Learning</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
+  
+  html, body {
+    width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+    background: #070a13; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #f8fafc;
+    overscroll-behavior: none;
+  }
+
+  .phone-frame {
+    width: 360px; height: 720px; background: #ffffff; border: 12px solid #1e293b; border-radius: 46px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 50px rgba(56, 189, 248, 0.35);
+    position: relative; overflow: hidden; display: flex; flex-direction: column; color: #0f172a;
+  }
+
+  .status-bar { height: 34px; flex-shrink: 0; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(8px); display: flex; justify-content: space-between; align-items: center; padding: 0 18px; font-size: 11px; font-weight: 700; color: #ffffff; z-index: 100; }
+  .notch { width: 100px; height: 16px; background: #1e293b; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; margin: 0 auto; }
+  .audio-toggle { cursor: pointer; font-size: 11px; background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 10px; z-index: 101; }
+
+  @media (max-width: 600px) {
+    html, body { position: fixed; inset: 0; background: #0f172a; display: block; }
+    .phone-frame { position: fixed; inset: 0; width: 100%; height: 100%; border: none; border-radius: 0; box-shadow: none; }
+    .notch { display: none; }
+    .status-bar { height: 40px; padding: 0 16px; }
+  }
+
+  /* =========================================================
+     CINEMATIC STUDIO BOOT SPLASH TRANSITION (3.8 SECONDS)
+     ========================================================= */
+  #bootSplash {
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 42%, #172554 0%, #090d16 55%, #02040a 100%);
+    z-index: 500; display: flex; flex-direction: column; justify-content: center; align-items: center;
+    transition: opacity 0.85s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.85s ease, transform 0.85s ease;
+    cursor: pointer; overflow: hidden;
+  }
+  #bootSplash.hidden {
+    opacity: 0; visibility: hidden; pointer-events: none; transform: scale(1.06);
+  }
+
+  /* Ambient Floating Math Particles */
+  .boot-particles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .boot-particle {
+    position: absolute; color: rgba(56, 189, 248, 0.14); font-family: 'Cambria Math', serif; font-style: italic; font-weight: 900;
+    animation: floatUp 6s linear infinite;
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(110%) rotate(0deg) scale(0.8); opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 0.8; }
+    100% { transform: translateY(-20%) rotate(25deg) scale(1.2); opacity: 0; }
+  }
+
+  /* Orbit Ring & Logo Container */
+  .boot-emblem-wrap {
+    position: relative; width: 130px; height: 130px; display: flex; justify-content: center; align-items: center;
+    opacity: 0; animation: emblemEntrance 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+  }
+  @keyframes emblemEntrance {
+    0% { opacity: 0; transform: scale(0.5) translateY(20px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .boot-orbit {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 1.5px dashed rgba(56, 189, 248, 0.45);
+    animation: spinOrbit 10s linear infinite;
+  }
+  .boot-orbit::after {
+    content: ''; position: absolute; top: -4px; left: 50%; width: 8px; height: 8px;
+    background: #38bdf8; border-radius: 50%; box-shadow: 0 0 12px #38bdf8, 0 0 24px #38bdf8;
+  }
+  @keyframes spinOrbit { to { transform: rotate(360deg); } }
+
+  .boot-logo {
+    width: 96px; height: 96px; background: linear-gradient(145deg, #1d4ed8, #0f172a);
+    border: 2px solid rgba(56, 189, 248, 0.8); border-radius: 28px; display: flex; align-items: center; justify-content: center;
+    color: #38bdf8; font-size: 44px; font-weight: 900; position: relative; overflow: hidden;
+    box-shadow: 0 0 40px rgba(37, 99, 235, 0.6), inset 0 0 18px rgba(56, 189, 248, 0.35);
+    animation: bootPulse 2s ease-in-out 1.2s infinite alternate;
+  }
+  /* Shimmer Light Sweep Across Logo */
+  .boot-logo::before {
+    content: ''; position: absolute; top: -50%; left: -120%; width: 60%; height: 200%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+    transform: rotate(25deg); animation: shimmerSweep 2.6s ease-in-out 1s infinite;
+  }
+  @keyframes shimmerSweep {
+    0% { left: -120%; }
+    45%, 100% { left: 160%; }
+  }
+  @keyframes bootPulse {
+    from { transform: scale(0.97); box-shadow: 0 0 25px rgba(56, 189, 248, 0.4); }
+    to { transform: scale(1.04); box-shadow: 0 0 55px rgba(56, 189, 248, 0.85); }
+  }
+
+  .boot-title {
+    margin-top: 22px; font-size: 22px; font-weight: 900; letter-spacing: 6px; color: #ffffff;
+    text-shadow: 0 4px 20px rgba(56, 189, 248, 0.5);
+    opacity: 0; animation: textReveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
+  }
+  .boot-subtitle {
+    margin-top: 4px; font-size: 9px; font-weight: 600; color: #94a3b8; letter-spacing: 1.5px;
+    opacity: 0; animation: textReveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.0s forwards;
+  }
+  .boot-studio-badge {
+    margin-top: 16px; padding: 4px 12px; border-radius: 20px;
+    background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35);
+    font-size: 9px; font-weight: 800; color: #38bdf8; letter-spacing: 2.5px; text-transform: uppercase;
+    opacity: 0; animation: textReveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.3s forwards;
+  }
+  @keyframes textReveal {
+    from { opacity: 0; transform: translateY(12px); letter-spacing: 2px; }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .boot-bar-wrap {
+    margin-top: 28px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    opacity: 0; animation: fadeInSimple 0.6s ease 1.4s forwards;
+  }
+  .boot-bar {
+    width: 170px; height: 5px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.6);
+  }
+  .boot-bar-fill {
+    height: 100%; width: 0%; background: linear-gradient(90deg, #2563eb, #38bdf8, #bae6fd);
+    box-shadow: 0 0 12px #38bdf8;
+    animation: loadFill 3.2s cubic-bezier(0.25, 1, 0.5, 1) 0.4s forwards;
+  }
+  @keyframes loadFill { to { width: 100%; } }
+  @keyframes fadeInSimple { to { opacity: 1; } }
+
+  .boot-tap-hint {
+    margin-top: 26px; font-size: 11px; font-weight: 800; color: #fde047; letter-spacing: 1.5px;
+    background: rgba(250, 204, 21, 0.12); border: 1px solid rgba(250, 204, 21, 0.4); padding: 7px 16px; border-radius: 20px;
+    opacity: 0; animation: fadeInSimple 0.6s ease 3.3s forwards, blinkHint 1.1s ease-in-out 3.8s infinite alternate;
+  }
+  @keyframes blinkHint { from { transform: scale(0.97); opacity: 0.65; } to { transform: scale(1.03); opacity: 1; } }
+
+  /* =========================================================
+     MAIN APP SCREENS & COMPONENTS
+     ========================================================= */
+  .app-screen { flex: 1; display: none; flex-direction: column; padding: 16px; position: relative; overflow-y: auto; }
+  .app-screen.active { display: flex; animation: slideIn 0.25s ease forwards; }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: scale(0.97) translateY(8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .bg-dark { background: radial-gradient(circle at top, #1e40af 0%, #0f172a 100%); color: white; }
+  .bg-grid {
+    background-color: #0f172a;
+    background-image: radial-gradient(rgba(56, 189, 248, 0.15) 1px, transparent 0), linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px, 30px 30px, 30px 30px; color: white;
+  }
+  .bg-chalk { background: linear-gradient(135deg, #064e3b 0%, #022c22 100%); color: #ecfdf5; }
+
+  .logo-3d {
+    width: 90px; height: 90px; background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 26px; display: flex; align-items: center; justify-content: center;
+    color: #38bdf8; font-size: 40px; font-weight: 900; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3); position: relative;
+  }
+
+  .math-font { font-family: 'Cambria Math', 'Times New Roman', serif; font-style: italic; }
+  .svg-icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .btn { padding: 12px 16px; border-radius: 14px; font-size: 12px; font-weight: 700; text-align: center; cursor: pointer; transition: all 0.15s; border: none; }
+  .btn:active { transform: scale(0.95); }
+  .btn-blue { background: #2563eb; color: white; box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+  .btn-amber { background: #f59e0b; color: white; box-shadow: 0 4px 12px rgba(245,158,11,0.4); }
+  .btn-green { background: #059669; color: white; box-shadow: 0 4px 12px rgba(5,150,105,0.3); }
+  .btn-gray { background: rgba(255,255,255,0.15); backdrop-filter: blur(5px); color: currentColor; border: 1px solid rgba(255,255,255,0.25); }
+
+  .card { background: rgba(255, 255, 255, 0.95); border-radius: 16px; padding: 12px; border: 1px solid #e2e8f0; margin-bottom: 10px; color: #0f172a; }
+  .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .nav-icon { width: 34px; height: 34px; background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; }
+
+  .narator-box { background: rgba(15, 23, 42, 0.85); color: #f8fafc; font-size: 10px; padding: 8px 12px; border-radius: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; line-height: 1.3; border-left: 4px solid #38bdf8; }
+
+  .drag-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 10px 0; min-height: 50px; }
+  .drag-item { padding: 8px 14px; background: #dbeafe; border: 2px solid #3b82f6; color: #1e40af; font-weight: 800; border-radius: 12px; cursor: grab; font-size: 13px; }
+  .drop-zone { border: 2px dashed #94a3b8; border-radius: 14px; min-height: 75px; padding: 8px; text-align: center; background: rgba(255,255,255,0.95); margin-bottom: 8px; }
+  
+  .level-card { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 14px; background: white; margin-bottom: 8px; color: #0f172a; border-left: 5px solid #94a3b8; }
+  .level-card.unlocked { border-left-color: #10b981; cursor: pointer; }
+  .level-card.locked { opacity: 0.6; }
+
+  .wrong-shake { animation: shake 0.4s ease; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-8px); }
+    40%, 80% { transform: translateX(8px); }
+  }
+
+  .app-modal-overlay {
+    position: absolute; inset: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px);
+    display: none; justify-content: center; align-items: center; padding: 20px; z-index: 200;
+  }
+  .app-modal-overlay.active { display: flex; animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  @keyframes modalPop {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .app-modal-card {
+    background: #ffffff; border-radius: 20px; padding: 18px; text-align: center; color: #0f172a; width: 100%; max-width: 320px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+  }
+
+  .materi-tabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 4px; }
+  .materi-tab-btn { padding: 6px 12px; border-radius: 10px; background: rgba(255,255,255,0.15); color: white; font-size: 10px; font-weight: 700; cursor: pointer; white-space: nowrap; border: 1px solid rgba(255,255,255,0.2); }
+  .materi-tab-btn.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; }
+  /* Sembunyikan paksa badge Powered by Netlify */
+  a[href*="netlify.com"],
+  div[class*="netlify"],
+  iframe[src*="netlify"] {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <!-- CINEMATIC STUDIO BOOT SPLASH TRANSITION -->
+  <div id="bootSplash" onclick="enterAppFromBoot()">
+    <div class="boot-particles">
+      <span class="boot-particle" style="left: 14%; font-size: 22px; animation-delay: 0s;">x²</span>
+      <span class="boot-particle" style="left: 78%; font-size: 26px; animation-delay: 0.8s;">3y</span>
+      <span class="boot-particle" style="left: 28%; font-size: 18px; animation-delay: 1.5s;">∑</span>
+      <span class="boot-particle" style="left: 65%; font-size: 20px; animation-delay: 0.4s;">a+b</span>
+      <span class="boot-particle" style="left: 48%; font-size: 24px; animation-delay: 1.9s;">π</span>
+    </div>
+
+    <div class="boot-emblem-wrap">
+      <div class="boot-orbit"></div>
+      <div class="boot-logo"><span class="math-font">3x</span></div>
+    </div>
+
+    <div class="boot-title">ALJABAR</div>
+    <div class="boot-subtitle">INTERACTIVE GAMIFIED MATH</div>
+    <div class="boot-studio-badge">CRAFTED BY EDRIC STUDIO</div>
+
+    <div class="boot-bar-wrap">
+      <div class="boot-bar"><div class="boot-bar-fill"></div></div>
+      <span style="font-size: 8.5px; color: #64748b; letter-spacing: 1px;">LOADING ASSETS & AUDIO ENGINE...</span>
+    </div>
+
+    <div class="boot-tap-hint">TAP LAYAR UNTUK MASUK ➔</div>
+  </div>
+
+  <div class="status-bar">
+    <span>ALJABAR APP</span>
+    <div class="notch"></div>
+    <span class="audio-toggle" onclick="toggleAudio(event)">🔊 Sound: <b id="audioStatus">ON</b></span>
+  </div>
+
+  <!-- IN-APP MOBILE NOTIFICATION MODAL -->
+  <div id="appModal" class="app-modal-overlay">
+    <div class="app-modal-card">
+      <div id="modalIcon" style="font-size: 32px; margin-bottom: 6px;">🔔</div>
+      <h3 id="modalTitle" style="font-size: 15px; font-weight: 800; color: #0f172a;">Pemberitahuan</h3>
+      <p id="modalBody" style="font-size: 11px; color: #64748b; margin: 8px 0 16px 0; line-height: 1.4;"></p>
+
+      <div style="display: flex; gap: 8px; justify-content: center;" id="modalActions">
+        <div class="btn btn-blue" style="flex:1;" onclick="closeAppModal()">Mengerti</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCENE 1: SPLASH SCREEN -->
+  <div id="screen1" class="app-screen bg-dark active" style="justify-content: center; align-items: center; text-align: center;" onclick="replayIntroIfIdle(event)">
+    <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 80px;">
+      <div class="logo-3d"><span class="math-font">3x</span></div>
+      <h1 style="font-size: 26px; color: #ffffff; font-weight: 900; margin-top: 14px;">ALJABAR</h1>
+      <p style="font-size: 10.5px; color: #bae6fd; margin-top: 4px; font-weight: 700; max-width: 230px;">Aplikasi Latihan dan Jawaban Belajar Aljabar Ringkas</p>
+    </div>
+
+    <div style="position: absolute; bottom: 24px; width: 88%; max-width: 340px;">
+      <div class="btn btn-amber" onclick="event.stopPropagation(); playClickSFX(); goToScreen(2);" style="margin-bottom: 8px; font-size: 13px;">MULAI BELAJAR ➔</div>
+      <div style="display: flex; gap: 8px;">
+        <div class="btn btn-gray" onclick="event.stopPropagation(); playClickSFX(); showAppModal('ℹ️', 'Petunjuk Aplikasi', 'Pelajari Materi Level 1 hingga 5. Selesaikan 5 Soal Tantangan di tiap level untuk membuka lencana. Soal otomatis diacak ulang setiap Reset!');" style="flex:1;">PETUNJUK</div>
+        <div class="btn btn-gray" onclick="event.stopPropagation(); playClickSFX(); showAppModal('👨‍💻', 'Profil Pengembang', 'Nama: Muhammad Edric Faustadanendra\nNIM: 240631100084\nProdi: Pendidikan Informatika UTM 2026');" style="flex:1;">PROFIL</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCENE 2: BERANDA UTAMA GAMIFIKASI -->
+  <div id="screen2" class="app-screen bg-grid">
+    <div class="top-nav">
+      <div class="nav-icon" onclick="playClickSFX(); goToScreen(1);"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg></div>
+      <span style="font-size: 13px; font-weight: 800; color: #ffffff;">BERANDA GAMIFIKASI</span>
+      <div class="nav-icon" onclick="playClickSFX(); confirmExitApp();"><svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+    </div>
+
+    <div class="card" style="background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; border: none; padding: 14px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <div style="font-size: 10px; opacity: 0.85;">Total XP Kamu</div>
+          <div style="font-size: 22px; font-weight: 900;" id="liveXP">0 XP</div>
+        </div>
+        <div style="font-size: 28px;">🌟</div>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 10px; margin-top: 8px; font-weight: 700;">
+        <span id="liveBadgeCount">🎖️ 1/5 Lencana</span>
+        <span id="liveLevelProgress">🔓 Level 1 Terbuka</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div class="card" onclick="playClickSFX(); selectMateriTab(1);" style="display: flex; align-items: center; gap: 12px; border-left: 5px solid #10b981; cursor: pointer;">
+        <span style="font-size: 24px;">📚</span>
+        <div><strong style="font-size: 12px;">Materi Pembelajaran (Level 1-5)</strong><p style="font-size: 10px; color: #64748b;">Edukasi Berjenjang Lengkap untuk SMP</p></div>
+      </div>
+      <div class="card" onclick="playClickSFX(); goToScreen(7);" style="display: flex; align-items: center; gap: 12px; border-left: 5px solid #f59e0b; cursor: pointer;">
+        <span style="font-size: 24px;">🎮</span>
+        <div><strong style="font-size: 12px;">Pilihan Level Kuis (1 - 5)</strong><p style="font-size: 10px; color: #64748b;" id="lastSavedQuizDesc">Lanjutkan Soal Terakhir</p></div>
+      </div>
+      <div class="card" onclick="playClickSFX(); goToScreen(6);" style="display: flex; align-items: center; gap: 12px; border-left: 5px solid #6366f1; cursor: pointer;">
+        <span style="font-size: 24px;">🏆</span>
+        <div><strong style="font-size: 12px;">Galeri Lencana & Prestasi</strong><p style="font-size: 10px; color: #64748b;">Lihat Badge Real-Time</p></div>
+      </div>
+      <div style="text-align: center; margin-top: 8px;">
+        <span style="font-size: 10px; color: #f43f5e; cursor: pointer; text-decoration: underline;" onclick="playClickSFX(); confirmResetProgress();">Reset Progress & Acak Soal Baru</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCENE 3: MATERI PEMBELAJARAN BERJENJANG -->
+  <div id="screen3" class="app-screen bg-chalk">
+    <div class="top-nav">
+      <div class="nav-icon" onclick="playClickSFX(); goToScreen(2);"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg></div>
+      <span style="font-size: 12px; font-weight: 800;" id="materiHeaderTitle">MATERI LEVEL 1</span>
+      <div class="nav-icon" onclick="playClickSFX(); goToScreen(2);"><svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+    </div>
+
+    <div class="materi-tabs">
+      <div class="materi-tab-btn active" id="mTab1" onclick="playClickSFX(); selectMateriTab(1);">Level 1</div>
+      <div class="materi-tab-btn" id="mTab2" onclick="playClickSFX(); selectMateriTab(2);">Level 2</div>
+      <div class="materi-tab-btn" id="mTab3" onclick="playClickSFX(); selectMateriTab(3);">Level 3</div>
+      <div class="materi-tab-btn" id="mTab4" onclick="playClickSFX(); selectMateriTab(4);">Level 4</div>
+      <div class="materi-tab-btn" id="mTab5" onclick="playClickSFX(); selectMateriTab(5);">Level 5</div>
+    </div>
+
+    <div class="narator-box">
+      <span>🗣️</span>
+      <div id="materiNaratorText"><b>Narator:</b> "Pelajari materi ini dengan cermat sebelum memulai kuis!"</div>
+    </div>
+
+    <div class="card" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); text-align: center; padding: 14px; color: white;">
+      <span style="font-size: 10px; color: #a7f3d0; font-weight: 700;" id="materiSubPrompt">KLIK ELEMEN FORMULA:</span>
+      <div class="math-font" style="font-size: 28px; font-weight: 900; color: #fef08a; margin: 10px 0; display: flex; justify-content: center; gap: 6px;" id="materiFormulaContainer"></div>
+    </div>
+
+    <div class="card" id="materi-desc" style="font-size: 11px; line-height: 1.4; min-height: 70px; display: flex; align-items: center; justify-content: center; text-align: center; color: #475569;"></div>
+
+    <div style="position: absolute; bottom: 20px; left: 16px; right: 16px; display: flex; justify-content: space-between;">
+      <div class="btn btn-gray" onclick="playClickSFX(); goToScreen(2);">Back</div>
+      <div class="btn btn-blue" onclick="playClickSFX(); startQuizLevel(currentMateriLevel);">Mulai Kuis Level Ini ➔</div>
+    </div>
+  </div>
+
+  <!-- SCENE 7: MENU PILIHAN LEVEL KUIS (LEVEL 1 - 5) -->
+  <div id="screen7" class="app-screen bg-grid">
+    <div class="top-nav">
+      <div class="nav-icon" onclick="playClickSFX(); goToScreen(2);"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg></div>
+      <span style="font-size: 12px; font-weight: 800; color: #ffffff;">PILIHAN LEVEL KUIS</span>
+      <div class="nav-icon" onclick="playClickSFX(); goToScreen(2);"><svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+    </div>
+
+    <p style="font-size: 11px; color: #94a3b8; text-align: center; margin-bottom: 10px;" id="activeQuestionSetBadge">Paket Soal Aktif: Set A (Tersimpan Otomatis)</p>
+
+    <div id="levelList">
+      <div class="level-card unlocked" onclick="playClickSFX(); startQuizLevel(1);">
+        <div><strong>Level 1: Suku Sejenis</strong><p style="font-size: 10px; color: #64748b;">5 Soal Pengelompokan Variabel</p></div>
+        <span style="font-weight: 800; color: #10b981;">[ MAINKAN ]</span>
+      </div>
+      <div class="level-card locked" id="lvlBtn2" onclick="checkStartLevel(2)">
+        <div><strong>Level 2: Koefisien & Konstanta</strong><p style="font-size: 10px; color: #64748b;">5 Soal Pemisahan Unsur</p></div>
+        <span style="font-weight: 800; color: #64748b;" id="lvlStatus2">🔒 TERKUNCI</span>
+      </div>
+      <div class="level-card locked" id="lvlBtn3" onclick="checkStartLevel(3)">
+        <div><strong>Level 3: Penjumlahan Suku</strong><p style="font-size: 10px; color: #64748b;">5 Soal Tambah/Kurang Suku</p></div>
+        <span style="font-weight: 800; color: #64748b;" id="lvlStatus3">🔒 TERKUNCI</span>
+      </div>
+      <div class="level-card locked" id="lvlBtn4" onclick="checkStartLevel(4)">
+        <div><strong>Level 4: Perkalian Aljabar</strong><p style="font-size: 10px; color: #64748b;">5 Soal Kali Suku Tunggal</p></div>
+        <span style="font-weight: 800; color: #64748b;" id="lvlStatus4">🔒 TERKUNCI</span>
+      </div>
+      <div class="level-card locked" id="lvlBtn5" onclick="checkStartLevel(5)">
+        <div><strong>Level 5: Evaluasi & Faktorisasi</strong><p style="font-size: 10px; color: #64748b;">5 Soal Pemfaktoran Aljabar</p></div>
+        <span style="font-weight: 800; color: #64748b;" id="lvlStatus5">🔒 TERKUNCI</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCENE 4: ARENA KUIS REAL-TIME -->
+  <div id="screen4" class="app-screen bg-grid">
+    <div class="top-nav">
+      <div class="nav-icon" onclick="playClickSFX(); goToScreen(7);"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg></div>
+      <span style="font-size: 12px; font-weight: 800; color: #fde047;" id="quizTitleHeader">LEVEL 1 (SOAL 1/5)</span>
+      <div class="nav-icon" onclick="playClickSFX(); goToScreen(7);"><svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+    </div>
+
+    <div class="narator-box">
+      <span>🗣️</span>
+      <div id="quizInstruction"><b>Narator:</b> "Tarik atau tap elemen ke kotak target yang sesuai!"</div>
+    </div>
+
+    <div class="drag-container" id="dragSourceZone"></div>
+    <div id="dropTargetContainer"></div>
+
+    <div class="btn btn-green" onclick="validateQuizAnswer()" style="margin-top: 10px;">VALIDASI JAWABAN</div>
+  </div>
+
+  <!-- SCENE 5: POP-UP HASIL & REWARD BADGE -->
+  <div id="screen5" class="app-screen bg-dark" style="justify-content: center; align-items: center;">
+    <div class="card" style="text-align: center; padding: 22px; background: white; border-radius: 24px; width: 90%; max-width: 320px;">
+      <div style="font-size: 40px;">🎉</div>
+      <h2 style="font-size: 18px; color: #0f172a; font-weight: 900;">LUAR BIASA!</h2>
+      <p style="font-size: 11px; color: #64748b; margin-top: 2px;" id="rewardSubtitle">Level Berhasil Diselesaikan</p>
+
+      <div style="background: #fef3c7; border: 2px solid #fde047; padding: 12px; border-radius: 14px; margin: 12px 0;">
+        <div style="font-size: 32px;" id="rewardIcon">🎖️</div>
+        <div style="font-size: 12px; font-weight: 800; color: #92400e;" id="rewardBadgeName">Badge Master Suku</div>
+        <div style="font-size: 10px; color: #d97706; font-weight: 800; margin-top: 2px;">+300 XP Poin Diterima!</div>
+      </div>
+
+      <div class="btn btn-blue" onclick="playClickSFX(); goToScreen(6);" style="width: 100%;">LIHAT LENCANA SAYA ➔</div>
+    </div>
+  </div>
+
+  <!-- SCENE 6: GALERI LENCANA REAL-TIME -->
+  <div id="screen6" class="app-screen bg-grid">
+    <div class="top-nav">
+      <div class="nav-icon" onclick="playClickSFX(); goToScreen(2);"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg></div>
+      <span style="font-size: 12px; font-weight: 800; color: #ffffff;">GALERI LENCANA SAYA</span>
+      <div class="nav-icon" onclick="playClickSFX(); goToScreen(2);"><svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+      <div class="card" style="text-align: center; background: #f0fdf4; border-color: #bbf7d0;">
+        <div style="font-size: 26px;">🥉</div>
+        <strong style="font-size: 10px; color: #166534;">Pemula Aljabar</strong>
+        <p style="font-size: 8.5px; color: #15803d; font-weight: 800;">[ UNLOCKED ]</p>
+      </div>
+
+      <div class="card" id="bCard2" style="text-align: center; opacity: 0.5; border-style: dashed;">
+        <div style="font-size: 26px;" id="bIcon2">🔒</div>
+        <strong style="font-size: 10px;">Master Suku</strong>
+        <p style="font-size: 8.5px; color: #64748b;" id="bStat2">[ LOCKED ]</p>
+      </div>
+
+      <div class="card" id="bCard3" style="text-align: center; opacity: 0.5; border-style: dashed;">
+        <div style="font-size: 26px;" id="bIcon3">🔒</div>
+        <strong style="font-size: 10px;">Jawara Unsur</strong>
+        <p style="font-size: 8.5px; color: #64748b;" id="bStat3">[ LOCKED ]</p>
+      </div>
+
+      <div class="card" id="bCard4" style="text-align: center; opacity: 0.5; border-style: dashed;">
+        <div style="font-size: 26px;" id="bIcon4">🔒</div>
+        <strong style="font-size: 10px;">Pakar Operasi</strong>
+        <p style="font-size: 8.5px; color: #64748b;" id="bStat4">[ LOCKED ]</p>
+      </div>
+
+      <div class="card" id="bCard5" style="text-align: center; opacity: 0.5; border-style: dashed; grid-column: span 2;">
+        <div style="font-size: 26px;" id="bIcon5">🔒</div>
+        <strong style="font-size: 10px;">Raja Aljabar Ringkas</strong>
+        <p style="font-size: 8.5px; color: #64748b;" id="bStat5">[ LOCKED ]</p>
+      </div>
+    </div>
+
+    <div class="btn btn-gray" onclick="playClickSFX(); goToScreen(2);" style="margin-top: 15px;">Kembali ke Beranda</div>
+  </div>
+
+</div>
+
+<script>
+  let isAudioOn = true;
+  let introHasStarted = false;
+  let currentXP = 0;
+  let maxUnlockedLevel = 1;
+  let activeQuizLevel = 1;
+  let currentMateriLevel = 1;
+  let currentQuestionIndex = 0;
+  let unlockedBadgeCount = 1;
+  let questionSetIndex = 0; // 0 = Set A, 1 = Set B (Berubah setiap Reset)
+  let levelQuestionOrder = [0, 1, 2, 3, 4]; // Urutan soal yang diacak
+  let activeVoicePlayer = null;
+  let currentVoiceFile = 'intro.m4a';
+  let sharedAudioCtx = null;
+
+  // =========================================================
+  // UI SOUND EFFECTS ENGINE (PERBAIKAN VOLUME & MOBILE UNLOCK)
+  // =========================================================
+  function getAudioContext() {
+    if (!sharedAudioCtx) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass) sharedAudioCtx = new AudioContextClass();
+    }
+    if (sharedAudioCtx && sharedAudioCtx.state === 'suspended') {
+      sharedAudioCtx.resume();
+    }
+    return sharedAudioCtx;
+  }
+
+  ['pointerdown', 'touchstart', 'click'].forEach(evt => {
+    window.addEventListener(evt, () => { getAudioContext(); }, { once: true, passive: true });
+  });
+
+  function playTone(freqStart, freqEnd, duration, type = 'triangle', vol = 0.22, delay = 0) {
+    if (!isAudioOn) return;
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+
+      const trigger = () => {
+        const now = ctx.currentTime + delay;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freqStart, now);
+        if (freqEnd && freqEnd !== freqStart) {
+          osc.frequency.exponentialRampToValueAtTime(freqEnd, now + duration);
+        }
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(vol, now + 0.006);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + duration + 0.015);
+        osc.onended = () => {
+          osc.disconnect();
+          gain.disconnect();
+        };
+      };
+
+      if (ctx.state === 'suspended') {
+        ctx.resume().then(trigger);
+      } else {
+        trigger();
+      }
+    } catch (e) {}
+  }
+
+  function playClickSFX() {
+    playTone(1150, 320, 0.055, 'triangle', 0.26, 0);
+  }
+
+  function playPopSFX() {
+    playTone(580, 950, 0.07, 'sine', 0.22, 0);
+  }
+
+  function playWrongSFX() {
+    playTone(180, 140, 0.14, 'sawtooth', 0.18, 0);
+    playTone(140, 100, 0.18, 'sawtooth', 0.18, 0.13);
+  }
+
+  function playVictorySFX() {
+    playTone(587.33, 587.33, 0.1, 'sine', 0.2, 0);
+    playTone(783.99, 783.99, 0.1, 'sine', 0.2, 0.09);
+    playTone(1046.5, 1046.5, 0.24, 'sine', 0.24, 0.18);
+  }
+
+  // =========================================================
+  // CINEMATIC SPLASH & VOICE NARRATOR
+  // =========================================================
+  function enterAppFromBoot() {
+    playClickSFX();
+    const boot = document.getElementById('bootSplash');
+    if (boot && !boot.classList.contains('hidden')) {
+      boot.classList.add('hidden');
+      introHasStarted = true;
+      playCustomVoice('intro.m4a');
+    }
+  }
+
+  function replayIntroIfIdle(ev) {
+    if (!introHasStarted) {
+      introHasStarted = true;
+      playCustomVoice('intro.m4a');
+    }
+  }
+
+  function playCustomVoice(fileName) {
+    currentVoiceFile = fileName;
+    if (!isAudioOn) return;
+    try {
+      if (activeVoicePlayer) {
+        activeVoicePlayer.pause();
+        activeVoicePlayer.currentTime = 0;
+      }
+      activeVoicePlayer = new Audio(fileName);
+      activeVoicePlayer.play().catch(err => {
+        console.log("Menunggu interaksi atau file tidak ditemukan:", fileName);
+      });
+    } catch (e) {
+      console.error("Audio error:", e);
+    }
+  }
+
+  // =========================================================
+  // DYNAMIC QUESTION POOL (SET A & SET B + SHUFFLER)
+  // =========================================================
+  function shuffleArray(arr) {
+    const copy = [...arr];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  const questionPools = [
+    // PAKET SOAL SET A
+    {
+      1: [
+        { instruction: "Kelompokkan suku 2x dan 3x ke Target X, serta 5y ke Target Y!", items: [{ id: "i1", text: "2x", target: "zX" }, { id: "i2", text: "5y", target: "zY" }, { id: "i3", text: "3x", target: "zX" }], zones: [{ id: "zX", label: "Target Suku X" }, { id: "zY", label: "Target Suku Y" }] },
+        { instruction: "Kelompokkan 4y dan y ke Target Y, serta 7x ke Target X!", items: [{ id: "i1", text: "4y", target: "zY" }, { id: "i2", text: "7x", target: "zX" }, { id: "i3", text: "y", target: "zY" }], zones: [{ id: "zX", label: "Target Suku X" }, { id: "zY", label: "Target Suku Y" }] },
+        { instruction: "Kelompokkan 6a ke Target A, serta 2b dan 8b ke Target B!", items: [{ id: "i1", text: "6a", target: "zA" }, { id: "i2", text: "2b", target: "zB" }, { id: "i3", text: "8b", target: "zB" }], zones: [{ id: "zA", label: "Target Suku A" }, { id: "zB", label: "Target Suku B" }] },
+        { instruction: "Pisahkan suku sejenis 3x² ke Target X², serta 5x ke Target X!", items: [{ id: "i1", text: "3x²", target: "zX2" }, { id: "i2", text: "5x", target: "zX1" }], zones: [{ id: "zX2", label: "Target Suku X²" }, { id: "zX1", label: "Target Suku X" }] },
+        { instruction: "Pisahkan 9m ke Target M dan 3n ke Target N!", items: [{ id: "i1", text: "9m", target: "zM" }, { id: "i2", text: "3n", target: "zN" }], zones: [{ id: "zM", label: "Target Suku M" }, { id: "zN", label: "Target Suku N" }] }
+      ],
+      2: [
+        { instruction: "Dari 4x + 7, kelompokkan 4 ke Koefisien dan 7 ke Konstanta!", items: [{ id: "i1", text: "4", target: "zK" }, { id: "i2", text: "7", target: "zC" }], zones: [{ id: "zK", label: "Kotak Koefisien" }, { id: "zC", label: "Kotak Konstanta" }] },
+        { instruction: "Dari 9y - 3, kelompokkan 9 ke Koefisien dan -3 ke Konstanta!", items: [{ id: "i1", text: "9", target: "zK" }, { id: "i2", text: "-3", target: "zC" }], zones: [{ id: "zK", label: "Kotak Koefisien" }, { id: "zC", label: "Kotak Konstanta" }] },
+        { instruction: "Mana variabel dari 5a + 12? Tarik 'a' ke Kotak Variabel!", items: [{ id: "i1", text: "a", target: "zV" }, { id: "i2", text: "12", target: "zC" }], zones: [{ id: "zV", label: "Kotak Variabel" }, { id: "zC", label: "Kotak Konstanta" }] },
+        { instruction: "Dari -2x + 8, tarik -2 ke Koefisien dan 8 ke Konstanta!", items: [{ id: "i1", text: "-2", target: "zK" }, { id: "i2", text: "8", target: "zC" }], zones: [{ id: "zK", label: "Kotak Koefisien" }, { id: "zC", label: "Kotak Konstanta" }] },
+        { instruction: "Dari 6p + 11, tarik 'p' ke Variabel dan 6 ke Koefisien!", items: [{ id: "i1", text: "p", target: "zV" }, { id: "i2", text: "6", target: "zK" }], zones: [{ id: "zV", label: "Kotak Variabel" }, { id: "zK", label: "Kotak Koefisien" }] }
+      ],
+      3: [
+        { instruction: "Selesaikan 2x + 3x! Tarik hasil 5x ke Kotak Hasil!", items: [{ id: "i1", text: "5x", target: "zR" }, { id: "i2", text: "6x", target: "zD" }], zones: [{ id: "zR", label: "Hasil (2x + 3x)" }, { id: "zD", label: "Bukan Jawaban" }] },
+        { instruction: "Selesaikan 7y - 2y! Tarik hasil 5y ke Kotak Hasil!", items: [{ id: "i1", text: "5y", target: "zR" }, { id: "i2", text: "9y", target: "zD" }], zones: [{ id: "zR", label: "Hasil (7y - 2y)" }, { id: "zD", label: "Bukan Jawaban" }] },
+        { instruction: "Selesaikan 4a + a! Tarik hasil 5a ke Kotak Hasil!", items: [{ id: "i1", text: "5a", target: "zR" }, { id: "i2", text: "4a²", target: "zD" }], zones: [{ id: "zR", label: "Hasil (4a + a)" }, { id: "zD", label: "Bukan Jawaban" }] },
+        { instruction: "Selesaikan 10m - 6m! Tarik hasil 4m ke Kotak Hasil!", items: [{ id: "i1", text: "4m", target: "zR" }, { id: "i2", text: "16m", target: "zD" }], zones: [{ id: "zR", label: "Hasil (10m - 6m)" }, { id: "zD", label: "Bukan Jawaban" }] },
+        { instruction: "Selesaikan 3x + 8x! Tarik hasil 11x ke Kotak Hasil!", items: [{ id: "i1", text: "11x", target: "zR" }, { id: "i2", text: "5x", target: "zD" }], zones: [{ id: "zR", label: "Hasil (3x + 8x)" }, { id: "zD", label: "Bukan Jawaban" }] }
+      ],
+      4: [
+        { instruction: "Hitung 3 × 2x! Tarik hasil 6x ke Kotak Perkalian!", items: [{ id: "i1", text: "6x", target: "zR" }, { id: "i2", text: "5x", target: "zD" }], zones: [{ id: "zR", label: "Hasil (3 × 2x)" }, { id: "zD", label: "Bukan Jawaban" }] },
+        { instruction: "Hitung x × y! Tarik hasil xy ke Kotak Perkalian!", items: [{ id: "i1", text: "xy", target: "zR" }, { id: "i2", text: "x+y", target: "zD" }], zones: [{ id: "zR", label: "Hasil (x × y)" }, { id: "zD", label: "Bukan Jawaban" }] },
+        { instruction: "Hitung 4a × 2b! Tarik hasil 8ab ke Kotak Perkalian!", items: [{ id: "i1", text: "8ab", target: "zR" }, { id: "i2", text: "6ab", target: "zD" }], zones: [{ id: "zR", label: "Hasil (4a × 2b)" }, { id: "zD", label: "Bukan Jawaban" }] },
+        { instruction: "Hitung 5 × (-3m)! Tarik hasil -15m ke Kotak Perkalian!", items: [{ id: "i1", text: "-15m", target: "zR" }, { id: "i2", text: "15m", target: "zD" }], zones: [{ id: "zR", label: "Hasil (5 × -3m)" }, { id: "zD", label: "Bukan Jawaban" }] },
+        { instruction: "Hitung 2x × 3x! Tarik hasil 6x² ke Kotak Perkalian!", items: [{ id: "i1", text: "6x²", target: "zR" }, { id: "i2", text: "6x", target: "zD" }], zones: [{ id: "zR", label: "Hasil (2x × 3x)" }, { id: "zD", label: "Bukan Jawaban" }] }
+      ],
+      5: [
+        { instruction: "Faktorkan 2x + 4! Tarik 2 ke Luar dan (x + 2) ke Dalam Kurung!", items: [{ id: "i1", text: "2", target: "zOut" }, { id: "i2", text: "(x + 2)", target: "zIn" }], zones: [{ id: "zOut", label: "Luar Kurung" }, { id: "zIn", label: "Dalam Kurung" }] },
+        { instruction: "Faktorkan 3y - 9! Tarik 3 ke Luar dan (y - 3) ke Dalam Kurung!", items: [{ id: "i1", text: "3", target: "zOut" }, { id: "i2", text: "(y - 3)", target: "zIn" }], zones: [{ id: "zOut", label: "Luar Kurung" }, { id: "zIn", label: "Dalam Kurung" }] },
+        { instruction: "Faktorkan 5a + 10! Tarik 5 ke Luar dan (a + 2) ke Dalam Kurung!", items: [{ id: "i1", text: "5", target: "zOut" }, { id: "i2", text: "(a + 2)", target: "zIn" }], zones: [{ id: "zOut", label: "Luar Kurung" }, { id: "zIn", label: "Dalam Kurung" }] },
+        { instruction: "Faktorkan x² + 3x! Tarik x ke Luar dan (x + 3) ke Dalam Kurung!", items: [{ id: "i1", text: "x", target: "zOut" }, { id: "i2", text: "(x + 3)", target: "zIn" }], zones: [{ id: "zOut", label: "Luar Kurung" }, { id: "zIn", label: "Dalam Kurung" }] },
+        { instruction: "Faktorkan 4m - 12! Tarik 4 ke Luar dan (m - 3) ke Dalam Kurung!", items: [{ id: "i1", text: "4", target: "zOut" }, { id: "i2", text: "(m - 3)", target: "zIn" }], zones: [{ id: "zOut", label: "Luar Kurung" }, { id: "zIn", label: "Dalam Kurung" }] }
+      ]
+    },
+    // PAKET SOAL SET B (MUNCUL OTOMATIS SAAT RESET)
+    {
+      1: [
+        { instruction: "Kelompokkan 5p dan 2p ke Target P, serta 4q ke Target Q!", items: [{ id: "i1", text: "5p", target: "zP" }, { id: "i2", text: "4q", target: "zQ" }, { id: "i3", text: "2p", target: "zP" }], zones: [{ id: "zP", label: "Target Suku P" }, { id: "zQ", label: "Target Suku Q" }] },
+        { instruction: "Kelompokkan 6k dan k ke Target K, serta 9m ke Target M!", items: [{ id: "i1", text: "6k", target: "zK" }, { id: "i2", text: "9m", target: "zM" }, { id: "i3", text: "k", target: "zK" }], zones: [{ id: "zK", label: "Target Suku K" }, { id: "zM", label: "Target Suku M" }] },
+        { instruction: "Pisahkan suku 4y² ke Target Y², serta 7y ke Target Y!", items: [{ id: "i1", text: "4y²", target: "zY2" }, { id: "i2", text: "7y", target: "zY1" }], zones: [{ id: "zY2", label: "Target Suku Y²" }, { id: "zY1", label: "Target Suku Y" }] },
+        { instruction: "Kelompokkan 8x ke Target X, serta 3z dan 5z ke Target Z!", items: [{ id: "i1", text: "8x", target: "zX" }, { id: "i2", text: "3z", target: "zZ" }, { id: "i3", text: "5z", target: "zZ" }], zones: [{ id: "zX", label: "Target Suku X" }, { id: "zZ", label: "Target Suku Z" }] },
+        { instruction: "Pisahkan 11a ke Target A dan 2b ke Target B!", items: [{ id: "i1", text: "11a", target: "zA" }, { id: "i2", text: "2b", target: "zB" }], zones: [{ id: "zA", label: "Target Suku A" }, { id: "zB", label: "Target Suku B" }] }
+      ],
+      2: [
+        { instruction: "Dari 8m + 15, kelompokkan 8 ke Koefisien dan 15 ke Konstanta!", items: [{ id: "i1", text: "8", target: "zK" }, { id: "i2", text: "15", target: "zC" }], zones: [{ id: "zK", label: "Kotak Koefisien" }, { id: "zC", label: "Kotak Konstanta" }] },
+        { instruction: "Dari -6a + 9, kelompokkan -6 ke Koefisien dan 9 ke Konstanta!", items: [{ id: "i1", text: "-6", target: "zK" }, { id: "i2", text: "9", target: "zC" }], zones: [{ id: "zK", label: "Kotak Koefisien" }, { id: "zC", label: "Kotak Konstanta" }] },
+        { instruction: "Dari 10k - 4, tarik 'k' ke Variabel dan -4 ke Konstanta!", items: [{ id: "i1", text: "k", target: "zV" }, { id: "i2", text: "-4", target: "zC" }], zones: [{ id: "zV", label: "Kotak Variabel" }, { id: "zC", label: "Kotak Konstanta" }] },
+        { instruction: "Dari 3z + 19, kelompokkan 3 ke Koefisien dan 19 ke Konstanta!", items: [{ id: "i1", text: "3", target: "zK" }, { id: "i2", text: "19", target: "zC" }], zones: [{ id: "zK", label: "Kotak Koefisien" }, { id: "zC", label: "Kotak Konstanta" }] },
+        { instruction: "Dari 7n - 2, tarik 'n' ke Variabel dan 7 ke Koefisien!", items: [{ id: "i1", text: "n", target: "zV" }, { id: "i2", text: "7", target: "zK" }], zones: [{ id: "zV", label: "Kotak Variabel" }, { id: "zK", label: "Kotak Koefisien" }] }
+      ],
+      3: [
+        { instruction: "Selesaikan 4p + 6p! Tarik hasil 10p ke Kotak Hasil!", items: [{ id: "i1", text: "10p", target: "zR" }, { id: "i2", text: "24p", target: "zD" }], zones: [{ id: "zR", label: "Hasil (4p + 6p)" }, { id: "zD", label: "Bukan Jawaban" }] },
+        { instruction: "Selesaikan 9x - 4x! Tarik hasil 5x ke Kotak Hasil!", items: [{ id: "i1", text: "5x", target: "zR" }, { id: "i2", text: "13x", target: "zD" }], zones: [{ id: "zR", label: "Hasil (9x - 4x)" }, { id: "zD", label: "Bukan Jawaban" }] },
+        { instruction: "Selesaikan 6b + 2b! Tarik hasil 8b ke Kotak Hasil!", items: [{ id: "i1", text: "8b", target: "zR" }, { id: "i2", text: "12b", target: "zD" }], zones: [{ id: "zR", label: "Hasil (6b + 2b)" }, { id: "zD", label: "Bukan Jawaban" }] },
+        { instruction: "Selesaikan 12y - 5y! Tarik hasil 7y ke Kotak Hasil!", items: [{ id: "i1", text: "7y", target: "zR" }, { id: "i2", text: "17y", target: "zD" }], zones: [{ id: "zR", label: "Hasil (12y - 5y)" }, { id: "zD", label: "Bukan Jawaban" }] },
+        { instruction: "Selesaikan 8k + k! Tarik hasil 9k ke Kotak Hasil!", items: [{ id: "i1", text: "9k", target: "zR" }, { id: "i2", text: "8k²", target: "zD" }], zones: [{ id: "zR", label: "Hasil (8k + k)" }, { id: "zD", label: "Bukan Jawaban" }] }
+      ],
+      4: [
+        { instruction: "Hitung 4 × 3y! Tarik hasil 12y ke Kotak Perkalian!", items: [{ id: "i1", text: "12y", target: "zR" }, { id: "i2", text: "7y", target: "zD" }], zones: [{ id: "zR", label: "Hasil (4 × 3y)" }, { id: "zD", label: "Bukan Jawaban" }] },
+        { instruction: "Hitung p × q! Tarik hasil pq ke Kotak Perkalian!", items: [{ id: "i1", text: "pq", target: "zR" }, { id: "i2", text: "p+q", target: "zD" }], zones: [{ id: "zR", label: "Hasil (p × q)" }, { id: "zD", label: "Bukan Jawaban" }] },
+        { instruction: "Hitung 3m × 5n! Tarik hasil 15mn ke Kotak Perkalian!", items: [{ id: "i1", text: "15mn", target: "zR" }, { id: "i2", text: "8mn", target: "zD" }], zones: [{ id: "zR", label: "Hasil (3m × 5n)" }, { id: "zD", label: "Bukan Jawaban" }] },
+        { instruction: "Hitung 6 × (-2a)! Tarik hasil -12a ke Kotak Perkalian!", items: [{ id: "i1", text: "-12a", target: "zR" }, { id: "i2", text: "12a", target: "zD" }], zones: [{ id: "zR", label: "Hasil (6 × -2a)" }, { id: "zD", label: "Bukan Jawaban" }] },
+        { instruction: "Hitung 4y × 2y! Tarik hasil 8y² ke Kotak Perkalian!", items: [{ id: "i1", text: "8y²", target: "zR" }, { id: "i2", text: "8y", target: "zD" }], zones: [{ id: "zR", label: "Hasil (4y × 2y)" }, { id: "zD", label: "Bukan Jawaban" }] }
+      ],
+      5: [
+        { instruction: "Faktorkan 6x + 12! Tarik 6 ke Luar dan (x + 2) ke Dalam Kurung!", items: [{ id: "i1", text: "6", target: "zOut" }, { id: "i2", text: "(x + 2)", target: "zIn" }], zones: [{ id: "zOut", label: "Luar Kurung" }, { id: "zIn", label: "Dalam Kurung" }] },
+        { instruction: "Faktorkan 4y - 8! Tarik 4 ke Luar dan (y - 2) ke Dalam Kurung!", items: [{ id: "i1", text: "4", target: "zOut" }, { id: "i2", text: "(y - 2)", target: "zIn" }], zones: [{ id: "zOut", label: "Luar Kurung" }, { id: "zIn", label: "Dalam Kurung" }] },
+        { instruction: "Faktorkan 7a + 14! Tarik 7 ke Luar dan (a + 2) ke Dalam Kurung!", items: [{ id: "i1", text: "7", target: "zOut" }, { id: "i2", text: "(a + 2)", target: "zIn" }], zones: [{ id: "zOut", label: "Luar Kurung" }, { id: "zIn", label: "Dalam Kurung" }] },
+        { instruction: "Faktorkan y² + 5y! Tarik y ke Luar dan (y + 5) ke Dalam Kurung!", items: [{ id: "i1", text: "y", target: "zOut" }, { id: "i2", text: "(y + 5)", target: "zIn" }], zones: [{ id: "zOut", label: "Luar Kurung" }, { id: "zIn", label: "Dalam Kurung" }] },
+        { instruction: "Faktorkan 3p - 15! Tarik 3 ke Luar dan (p - 5) ke Dalam Kurung!", items: [{ id: "i1", text: "3", target: "zOut" }, { id: "i2", text: "(p - 5)", target: "zIn" }], zones: [{ id: "zOut", label: "Luar Kurung" }, { id: "zIn", label: "Dalam Kurung" }] }
+      ]
+    }
+  ];
+
+  // =========================================================
+  // SAVE / LOAD & RESET DENGAN PENGACAKAN PAKET SOAL
+  // =========================================================
+  function saveGameProgress() {
+    const saveData = {
+      xp: currentXP,
+      unlockedLvl: maxUnlockedLevel,
+      activeLvl: activeQuizLevel,
+      qIdx: currentQuestionIndex,
+      badges: unlockedBadgeCount,
+      setIdx: questionSetIndex,
+      qOrder: levelQuestionOrder
+    };
+    localStorage.setItem('ALJABAR_GAME_SAVE', JSON.stringify(saveData));
+  }
+
+  function loadGameProgress() {
+    const saved = localStorage.getItem('ALJABAR_GAME_SAVE');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        currentXP = data.xp || 0;
+        maxUnlockedLevel = data.unlockedLvl || 1;
+        activeQuizLevel = data.activeLvl || 1;
+        currentQuestionIndex = data.qIdx || 0;
+        unlockedBadgeCount = data.badges || 1;
+        questionSetIndex = typeof data.setIdx === 'number' ? data.setIdx : 0;
+        levelQuestionOrder = Array.isArray(data.qOrder) && data.qOrder.length === 5 ? data.qOrder : [0, 1, 2, 3, 4];
+
+        for (let i = 1; i < unlockedBadgeCount; i++) {
+          const bInfo = levelBadges[i];
+          if (bInfo) unlockBadgeUI(i, bInfo.icon, bInfo.name);
+        }
+      } catch(e) { console.error("Save state corrupt", e); }
+    } else {
+      levelQuestionOrder = shuffleArray([0, 1, 2, 3, 4]);
+      saveGameProgress();
+    }
+  }
+
+  function confirmResetProgress() {
+    showAppModal('🔄', 'Reset & Acak Soal Baru', 'Progres belajar akan direset ke awal dan seluruh soal serta kunci jawaban akan diganti ke paket baru. Lanjutkan?', true, () => {
+      const nextSet = (questionSetIndex + 1) % questionPools.length;
+      const newOrder = shuffleArray([0, 1, 2, 3, 4]);
+      const freshSave = {
+        xp: 0,
+        unlockedLvl: 1,
+        activeLvl: 1,
+        qIdx: 0,
+        badges: 1,
+        setIdx: nextSet,
+        qOrder: newOrder
+      };
+      localStorage.setItem('ALJABAR_GAME_SAVE', JSON.stringify(freshSave));
+      location.reload();
+    });
+  }
+
+  function highlightElem(desc) {
+    playPopSFX();
+    document.getElementById('materi-desc').innerHTML = `<strong style="color:#0f172a;">${desc}</strong>`;
+  }
+
+  const materiDataList = {
+    1: { title: "MATERI LEVEL 1: UNSUR & SUKU SEJENIS", prompt: "KLIK ELEMEN UNSUR ALJABAR:", formulaHTML: `<span onclick="highlightElem('Angka 3 adalah KOEFISIEN')" style="cursor:pointer;">3</span><span onclick="highlightElem('Huruf x adalah VARIABEL')" style="cursor:pointer;">x</span><span>+</span><span onclick="highlightElem('Angka 5 adalah KONSTANTA')" style="cursor:pointer;">5</span>`, defaultDesc: "Suku sejenis adalah suku yang memiliki variabel dan pangkat sama persis.", audioFile: "materi1.m4a", speechText: "Suku sejenis adalah suku yang memiliki variabel dan pangkat sama." },
+    2: { title: "MATERI LEVEL 2: KOEFISIEN & KONSTANTA", prompt: "KLIK ELEMEN UNTUK PEMISAHAN:", formulaHTML: `<span onclick="highlightElem('Angka -4 adalah KOEFISIEN')" style="cursor:pointer;">-4</span><span onclick="highlightElem('Huruf y adalah VARIABEL')" style="cursor:pointer;">y</span><span>+</span><span onclick="highlightElem('Angka 12 adalah KONSTANTA')" style="cursor:pointer;">12</span>`, defaultDesc: "Koefisien menempel pada variabel, sedangkan konstanta berdiri sendiri.", audioFile: "materi2.m4a", speechText: "Koefisien berada di depan variabel, sedangkan konstanta berdiri sendiri." },
+    3: { title: "MATERI LEVEL 3: PENJUMLAHAN SUKU", prompt: "KLIK PROSES OPERASI TAMBAH:", formulaHTML: `<span onclick="highlightElem('2x + 3x = (2+3)x = 5x')" style="cursor:pointer;">2x + 3x</span><span>=</span><span onclick="highlightElem('Hasil adalah 5x')" style="cursor:pointer;">5x</span>`, defaultDesc: "Operasi tambah/kurang HANYA bisa dilakukan pada suku sejenis!", audioFile: "materi3.m4a", speechText: "Penjumlahan dan pengurangan hanya bisa dilakukan pada suku sejenis." },
+    4: { title: "MATERI LEVEL 4: PERKALIAN ALJABAR", prompt: "KLIK PROSES OPERASI KALI:", formulaHTML: `<span onclick="highlightElem('Kalikan 3 dengan 2x')" style="cursor:pointer;">3 × 2x</span><span>=</span><span onclick="highlightElem('Hasil adalah 6x')" style="cursor:pointer;">6x</span>`, defaultDesc: "Kalikan koefisiennya dan gabungkan variabelnya.", audioFile: "materi4.m4a", speechText: "Pada perkalian aljabar, kalikan koefisiennya lalu gabungkan variabelnya." },
+    5: { title: "MATERI LEVEL 5: FAKTORISASI ALJABAR", prompt: "KLIK BENTUK FAKTORISASI:", formulaHTML: `<span onclick="highlightElem('Bentuk awal: 2x + 4')" style="cursor:pointer;">2x + 4</span><span>=</span><span onclick="highlightElem('Tarik FPB 2 keluar: 2(x + 2)')" style="cursor:pointer;">2(x + 2)</span>`, defaultDesc: "Tarik Faktor Persekutuan Terbesar (FPB) ke luar tanda kurung.", audioFile: "materi5.m4a", speechText: "Pemfaktoran dilakukan dengan menarik FPB ke luar tanda kurung." }
+  };
+
+  function selectMateriTab(lvl, silent = false) {
+    currentMateriLevel = lvl;
+    for (let i = 1; i <= 5; i++) {
+      const tab = document.getElementById('mTab' + i);
+      if (tab) tab.classList.toggle('active', i === lvl);
+    }
+
+    const data = materiDataList[lvl];
+    document.getElementById('materiHeaderTitle').innerText = data.title;
+    document.getElementById('materiSubPrompt').innerText = data.prompt;
+    document.getElementById('materiFormulaContainer').innerHTML = data.formulaHTML;
+    document.getElementById('materi-desc').innerText = data.defaultDesc;
+    document.getElementById('materiNaratorText').innerHTML = "<b>Narator:</b> \"" + data.speechText + "\"";
+
+    if (!silent) {
+      playCustomVoice(data.audioFile);
+      goToScreen(3);
+    }
+  }
+
+  const levelBadges = {
+    1: { name: "Master Suku Sejenis", icon: "🎖️" },
+    2: { name: "Jawara Unsur Aljabar", icon: "🥈" },
+    3: { name: "Pakar Penjumlahan", icon: "🥇" },
+    4: { name: "Master Perkalian Aljabar", icon: "🏆" },
+    5: { name: "Raja Aljabar Ringkas", icon: "👑" }
+  };
+
+  function updateGamificationUI() {
+    document.getElementById('liveXP').innerText = currentXP + " XP";
+    document.getElementById('liveBadgeCount').innerText = "🎖️ " + unlockedBadgeCount + "/5 Lencana";
+    document.getElementById('liveLevelProgress').innerText = "🔓 Level " + maxUnlockedLevel + " Terbuka";
+    document.getElementById('lastSavedQuizDesc').innerText = "Lanjutkan Level " + activeQuizLevel + " Soal " + (currentQuestionIndex + 1);
+    const setLabel = questionSetIndex === 0 ? "Set A" : "Set B";
+    document.getElementById('activeQuestionSetBadge').innerText = "Paket Soal Aktif: " + setLabel + " (Diacak Otomatis)";
+
+    for (let i = 2; i <= 5; i++) {
+      const btn = document.getElementById('lvlBtn' + i);
+      const stat = document.getElementById('lvlStatus' + i);
+      if (i <= maxUnlockedLevel) {
+        btn.classList.remove('locked');
+        btn.classList.add('unlocked');
+        stat.innerText = "[ MAINKAN ]";
+        stat.style.color = "#10b981";
+      }
+    }
+  }
+
+  function checkStartLevel(lvl) {
+    if (lvl <= maxUnlockedLevel) {
+      playClickSFX();
+      startQuizLevel(lvl);
+    } else {
+      playWrongSFX();
+      showAppModal('🔒', 'Level Terkunci', 'Selesaikan level sebelumnya terlebih dahulu!');
+    }
+  }
+
+  function startQuizLevel(lvl) {
+    if (lvl !== activeQuizLevel) {
+      activeQuizLevel = lvl;
+      currentQuestionIndex = 0;
+      levelQuestionOrder = shuffleArray([0, 1, 2, 3, 4]);
+    }
+    saveGameProgress();
+    renderCurrentQuestion();
+    playCustomVoice('kuis_mulai.m4a');
+    goToScreen(4);
+  }
+
+  let selectedItemForTap = null;
+
+  function getActiveQuestionData() {
+    const actualIdx = levelQuestionOrder[currentQuestionIndex];
+    return questionPools[questionSetIndex][activeQuizLevel][actualIdx];
+  }
+
+  function renderCurrentQuestion() {
+    selectedItemForTap = null;
+    const qData = getActiveQuestionData();
+    document.getElementById('quizTitleHeader').innerText = "LEVEL " + activeQuizLevel + " (SOAL " + (currentQuestionIndex + 1) + "/5)";
+    document.getElementById('quizInstruction').innerHTML = "<b>Narator:</b> \"" + qData.instruction + "\"";
+
+    const shuffledItems = shuffleArray(qData.items);
+
+    const sourceZone = document.getElementById('dragSourceZone');
+    sourceZone.innerHTML = "";
+    shuffledItems.forEach(item => {
+      const span = document.createElement('span');
+      span.className = 'drag-item math-font';
+      span.id = item.id;
+      span.draggable = true;
+      span.innerText = item.text;
+      span.setAttribute('data-target', item.target);
+      span.ondragstart = drag;
+      span.onclick = function() {
+        playPopSFX();
+        document.querySelectorAll('.drag-item').forEach(el => el.style.outline = 'none');
+        if (selectedItemForTap === span) {
+          selectedItemForTap = null;
+        } else {
+          selectedItemForTap = span;
+          span.style.outline = '3px solid #f59e0b';
+        }
+      };
+      sourceZone.appendChild(span);
+    });
+
+    const targetZoneContainer = document.getElementById('dropTargetContainer');
+    targetZoneContainer.innerHTML = "";
+    qData.zones.forEach(zone => {
+      const div = document.createElement('div');
+      div.className = 'drop-zone';
+      div.id = zone.id;
+      div.ondrop = drop;
+      div.ondragover = allowDrop;
+      div.onclick = function() {
+        if (selectedItemForTap) {
+          playPopSFX();
+          div.querySelector('div').appendChild(selectedItemForTap);
+          selectedItemForTap.style.outline = 'none';
+          selectedItemForTap = null;
+        }
+      };
+      div.innerHTML = `<span style="font-size:10px; font-weight:800; color:#1d4ed8;">${zone.label}</span><div style="margin-top:6px; display:flex; gap:4px; justify-content:center; flex-wrap:wrap;"></div>`;
+      targetZoneContainer.appendChild(div);
+    });
+  }
+
+  function validateQuizAnswer() {
+    const qData = getActiveQuestionData();
+    let allCorrect = true;
+
+    qData.items.forEach(item => {
+      const elem = document.getElementById(item.id);
+      const parentZone = elem ? elem.closest('.drop-zone') : null;
+      if (!parentZone || parentZone.id !== item.target) {
+        allCorrect = false;
+      }
+    });
+
+    if (allCorrect) {
+      playVictorySFX();
+      if (currentQuestionIndex < 4) {
+        currentQuestionIndex++;
+        saveGameProgress();
+        renderCurrentQuestion();
+      } else {
+        currentXP += 300;
+
+        if (activeQuizLevel === maxUnlockedLevel && maxUnlockedLevel < 5) {
+          maxUnlockedLevel++;
+          unlockedBadgeCount++;
+        }
+
+        const bInfo = levelBadges[activeQuizLevel];
+        unlockBadgeUI(activeQuizLevel, bInfo.icon, bInfo.name);
+
+        document.getElementById('rewardSubtitle').innerText = "Seluruh 5 Soal Level " + activeQuizLevel + " Berhasil Diselesaikan!";
+        document.getElementById('rewardIcon').innerText = bInfo.icon;
+        document.getElementById('rewardBadgeName').innerText = 'Badge "' + bInfo.name + '"';
+
+        currentQuestionIndex = 0;
+        levelQuestionOrder = shuffleArray([0, 1, 2, 3, 4]);
+        saveGameProgress();
+        updateGamificationUI();
+        playCustomVoice('menang.m4a');
+        goToScreen(5);
+      }
+    } else {
+      playWrongSFX();
+      const frame = document.querySelector('.phone-frame');
+      frame.classList.add('wrong-shake');
+      setTimeout(() => frame.classList.remove('wrong-shake'), 400);
+      showAppModal('❌', 'Jawaban Kurang Tepat', 'Pastikan seluruh elemen ditaruh di kotak target yang sesuai!');
+    }
+  }
+
+  function unlockBadgeUI(levelIdx, icon, title) {
+    const idx = levelIdx === 1 ? 2 : levelIdx;
+    const bCard = document.getElementById('bCard' + idx);
+    const bIcon = document.getElementById('bIcon' + idx);
+    const bStat = document.getElementById('bStat' + idx);
+
+    if (bCard) {
+      bCard.style.opacity = "1";
+      bCard.style.borderStyle = "solid";
+      bCard.style.background = "#f0fdf4";
+      bCard.style.borderColor = "#bbf7d0";
+      bIcon.innerText = icon;
+      bStat.innerText = "[ UNLOCKED ]";
+      bStat.style.color = "#15803d";
+      bStat.style.fontWeight = "800";
+    }
+  }
+
+  function showAppModal(icon, title, body, showConfirm = false, onConfirm = null) {
+    document.getElementById('modalIcon').innerText = icon;
+    document.getElementById('modalTitle').innerText = title;
+    document.getElementById('modalBody').innerText = body;
+
+    const actionsContainer = document.getElementById('modalActions');
+    if (showConfirm) {
+      actionsContainer.innerHTML = `
+        <div class="btn btn-gray" style="flex:1;" onclick="playClickSFX(); closeAppModal();">Batal</div>
+        <div class="btn btn-blue" style="flex:1;" id="modalConfirmBtn">Ya, Lanjutkan</div>
+      `;
+      document.getElementById('modalConfirmBtn').onclick = () => {
+        playClickSFX();
+        closeAppModal();
+        if (onConfirm) onConfirm();
+      };
+    } else {
+      actionsContainer.innerHTML = `<div class="btn btn-blue" style="flex:1;" onclick="playClickSFX(); closeAppModal();">Mengerti</div>`;
+    }
+
+    document.getElementById('appModal').classList.add('active');
+  }
+
+  function closeAppModal() {
+    document.getElementById('appModal').classList.remove('active');
+  }
+
+  function confirmExitApp() {
+    showAppModal('🚪', 'Konfirmasi Keluar', 'Apakah Anda yakin ingin keluar ke tampilan awal?', true, () => goToScreen(1));
+  }
+
+  function allowDrop(ev) { ev.preventDefault(); }
+  function drag(ev) { playPopSFX(); ev.dataTransfer.setData("text", ev.target.id); }
+  function drop(ev) {
+    ev.preventDefault();
+    playPopSFX();
+    var data = ev.dataTransfer.getData("text");
+    ev.target.closest('.drop-zone').querySelector('div').appendChild(document.getElementById(data));
+  }
+
+  function toggleAudio(ev) {
+    if (ev) ev.stopPropagation();
+    isAudioOn = !isAudioOn;
+    document.getElementById('audioStatus').innerText = isAudioOn ? 'ON' : 'OFF';
+    if (!isAudioOn) {
+      if (activeVoicePlayer) activeVoicePlayer.pause();
+    } else {
+      playClickSFX();
+      playCustomVoice(currentVoiceFile);
+    }
+  }
+
+  function goToScreen(num) {
+    introHasStarted = true;
+    document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen' + num).classList.add('active');
+
+    if (num === 1) playCustomVoice('intro.m4a');
+    if (num === 2) playCustomVoice('beranda.m4a');
+    if (num === 6) playCustomVoice('lencana.m4a');
+  }
+
+  loadGameProgress();
+  selectMateriTab(1, true);
+  updateGamificationUI();
+  goToScreen(1);
+</script>
+
+</body>
+</html>
